@@ -8,7 +8,7 @@
 
 ## 🛠 Teach Stack 🛠
 
-![javascript](https://user-images.githubusercontent.com/84552632/164163468-043bc21f-e215-4749-8124-a384ae1d79ac.svg)
+<img src="https://img.shields.io/badge/#F7DF1E?style=for-the-badge&logo=JavaScript&logoColor=white">
 
 - 🔭 I’m currently working on ...
 - 🌱 I’m currently learning ...
