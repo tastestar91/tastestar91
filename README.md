@@ -1,9 +1,14 @@
 ### Hi there 👋
 
 <img src="https://capsule-render.vercel.app/api?type=wave&color=auto&height=300&section=header&text=Welcome&fontSize=90" />
-**tastestar91/tastestar91** is a ✨ _special_ ✨ repository because its `README.md` (this file) appears on your GitHub profile.
 
-Here are some ideas to get you started:
+### About
+- velog : <https://velog.io/@tastestar>
+
+
+## 🛠 Teach Stack 🛠
+
+![javascript](https://user-images.githubusercontent.com/84552632/164163468-043bc21f-e215-4749-8124-a384ae1d79ac.svg)
 
 - 🔭 I’m currently working on ...
 - 🌱 I’m currently learning ...
