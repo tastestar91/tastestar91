@@ -1,0 +1,14 @@
+// 중개자 제거하기
+
+const manager = aPerson.manager;
+
+class Person {
+    get manager() { return this.department.manager}
+}
+
+// =>
+manager = aPerson.department.manager;
+
+// 위임 객체를 얻는 게터를 만듭니다.
+// 위임 메서드를 호출하는 클라이언트가 모두 이 게터를 거치도록 수정
+// 모두 수정했다면 위임메서들ㄹ 삭제

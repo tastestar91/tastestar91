@@ -1,0 +1,50 @@
+class Person {
+    get officeAreaCode() { return this._telephoneNumber.areaCode}
+    get officeNumber() { return this._telephoneNumber.number}
+}
+
+class TelephoneNumber {
+    get areaCode() { return this._areaCode}
+    get number() { return this._number}
+}
+
+// =>
+class Person2 {
+    get officeAreaCode() { return this._officeAreaCode}
+    get officeNumber() { return this._officeNumber}
+}
+
+// 절차
+// 소스 클래스의 각 public 메서드에 대응하는 메서드들을 타깃 클래스에 생성
+// 소스 클래스의 메서드를 사용하는 코드를 모두 타깃 클래스의 위임메서드를 사용하도록 밖꿈
+// 소스 클래스의 메서드와 필드를 모두 타깃 클래스로 옮깁니다
+// 소스 클래스를 삭제하고 조의르 ㄹ표함
+
+class TrackingInformation {
+    get shippingCompany() { return this._shippingCompany}
+    set shippingCompany(arg) { this._shippingCompany = arg}
+
+    get trackingNumber() { return this._trackingNumber }
+    set trackingNumber(arg) { return this._trackingNumber = arg}
+
+    get display () {
+        return
+    }
+}
+
+class shipment {
+    get trackingInfo () {
+        return this._trackingInformation.display
+    }
+    get shippingCompany() { return this._shippingCompany}
+    set shippingCompany(arg) {this._shippingCompany = arg}
+    get trackingNumber() { return this._trackingNumber }
+    set trackingNumber(arg) { return this._trackingNumber = arg}
+
+    // get TrackingInformation() { return this._trackingInformation}
+    // set TrackingInformation(aTrackingInformation) {
+    //     this._trackingInformation = aTrackingInformation
+    }
+}
+
+// trackingInformation 코드를 찾음 찾읂 ㅜ shipment로 모로지 옮김
