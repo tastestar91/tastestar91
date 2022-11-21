@@ -80,3 +80,5 @@ plt.plot(s3, label='s3')
 
 plt.legend()
 plt.show()
+
+

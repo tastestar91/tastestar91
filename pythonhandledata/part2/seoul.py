@@ -152,18 +152,30 @@ import folium
 
 # map_osm = folium.Map(location=[45.5236, -122.6750])
 
-# stamen = folium.Map(location=[45.5236, -122.6750], tiles='Stamen Toner', zoom_start=13)
-# stamen'
+# # stamen = folium.Map(location=[45.5236, -122.6750], tiles='Stamen Toner', zoom_start=13)
+# # stamen'
 
-state_unemployment = '02. folium_US_Unemployment_Oct2012.csv'
-state_data = pd.read_csv(state_unemployment)
+# state_unemployment = '02. folium_US_Unemployment_Oct2012.csv'
+# state_data = pd.read_csv(state_unemployment)
 
-state_geo = '02. folium_us-states.json'
-map = folium.map(location=[40, -98], zoom_start=4)
-map.choropleth(geo_data = state_geo, data=state_data,
-    columns = ['State, Unemployment'],
-    key_on  ='feature_id',
-    file_color = 'YlGn',
-    legend_name = 'Unemployment Rate (%)'
+# state_geo = '02. folium_us-states.json'
+# map = folium.map(location=[40, -98], zoom_start=4)
+# map.choropleth(geo_data = state_geo, data=state_data,
+#     columns = ['State, Unemployment'],
+#     key_on  ='feature_id',
+#     file_color = 'YlGn',
+#     legend_name = 'Unemployment Rate (%)'
+# )
+# map
+
+import json
+geo_path = '02. skorea_municipalities_geo_simple.json'
+geo_str = json.load(open(geo_path, encoding='utf-8'))
+
+map = folium.map(location = [37.5502, 126.982], zoom_start = 11,
+    tiles='Stamen Toner')
+
+map.choropleth(geo_data = geo_str,
+    data = crime_anal_norm['살인'],
+    columns = 
 )
-map
