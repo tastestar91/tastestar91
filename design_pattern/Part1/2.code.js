@@ -1,75 +1,147 @@
-샤딩 : 데이터셋이 매우 크거나 질의 처리량이 매우 높다면 복제만으로 부족하고 데이터를 파티션으로 쪼갤 필요가 있음
-
-## 파티셔닝과 복제
-
-## 키-값 데이터 파티셔닝
-
-파티셔닝의 목적 : 데이터와 질의 부하를 노드 사이에 고르게 분산시키는 것
-
-핫스팟 : 불균형하게 부하가 높은 파티션으로
-
-## 키 범위 기준 파티셔닝
-
-데이터를 저장하는 애플리케이션에서 측정값의 타임스탬프를 키로 사용한다고 하면, 범위 스캔이 유용
-특정 접근 패턴이 핫스팟을 유발하는 단점
+// 구조적 프로그래밍 뵘-야코피니 이론
+// 서브 프로그램의 순차 실행
+// 두 개의 서브 프로그램으 ㅣ조건부 실행
+// 조건이 참이 될 때까지 하나의 서브 프로그램을 반복 실행
 
 
-## 키의 해시값 기준 파티셔닝
-키의 파티션을 정하는데 해시 함수를 사용
-파티션 경계는 크기가 동일하도록 나눌 수 있고 무작위 가깝게 선택할 수 있음( 일관성 해싱)
-=> 그러나 범위 질의르 ㄹ효율적으로 실행할 수 있는 능력을 잃어버림
-
-## 쏠진 작업부하와 핫스팟 완화
-
-## 2.파티셔닝ㄱ와 보조색인
-보조색인 : 레코드를 유일하게 식별한느 용도가 아니라 특정한 값이 발생한 항목을 검색하는 수단
-
-### 문서 기준 보조 색인 파티셔닝
-문서 파티셔닝 색인은 전역색인, 지역 색인이라고도 함(global index, local index)
-
-스캐터/개더 : 모든 파티션으로 질의를 보내서 얻은 결과를 모두 보아야함
-
-### 용어 기준 보조 색인 파티셔닝
-
-전역 색인은 쓰기가 느리고 복잡, 비동기로 갱신
-모든 파티션의 데이터를 담당하는 전역 색인
-
-## 3. 파티션 재균형화
-
-재균형화 : 클러스터에서 한 노드가 담당하던 부하를 다른노드로 옮기는 과정 
-
-    - 재균형화 후, 부하가 클러스터 내에 있는 노드들 사이에 균등하게 분배해야된다
-    - 재균형화 도중에도 데이터베이스 읽기 쓰기 요청을 받아들여야한다
-    - 재균형화가 빨라 실행되고 네트워크와 디스크 I/O부하를 최소화할 수 있도록 노드들 사이에 데이터가 필요 이상으로 옮겨져서는 안된다
+// 객체지향 언어 구조 클래스 서브 클래스 올레-요한 달, 키르스텐 니가드
 
 
-### (1) 쓰면 안되는 방법 : 해시값에 모드 N 연산을 실행
-키가 자주 이동하면 재균형화 비용이 지나치게 커짐
+var functionObject = {
+    greeting : "hello World",
+    doThings : function() {
+        console.log(this.greeting)
+    }
+}
+// this 식별자를 사용, 이를 사용하는 함수의 소유자에 바인딩 뙈있음
+// 하지만 함수가 객체의 외부에서 선언되었다면 전역 객체를 참조
 
-### (2) 파티션 개수 고정
-파티션을 노드 대수보다 많이 만들고 각 노드에 여러 파티션을 할당하는 것
+var target = document.getElementById("someId")
+target.addEventListener("click", () => {
+    console.log(this)
+}, false) // target값을 가짐
 
-### (3) 동적 파티셔닝
-파티션 크기가 설정된 값을 넘어서면 파티션을 두 개로쪼개 각각에 원래 파티션의 절반 정도에 데이터가 포함되게 한다
 
-사전 분할 
+// 객체는 클래스와 동일하지않음, 객체는 클래스의 인스턴스 
+// 복수의 functinoObject 생성할려고 하면 오류 발생
 
-### (4) 노드 비례 파티셔닝
-파티션 개수가 노드 대수에 비례하게하는 것, 노드당 할당되는 파티션 개수를 고정
-새노드가 클러스터에 추가되면 고정된 개수의 파티션을 무작위로 선택해서 분할하고 각 분할된 파티션의 절반은 그대로 두고 새노드에 할당합니다.
+//repl모듈에서 오류, read-execute-print loop 모듈 
+var ThingDoer = () => {
+    this.greeting = "hello World"
+    this.doThings = () => {
+        console.log(this.greeting)
+        this.doOtherThings()
+    }
+    this.doOtherThings = () => {
+        console.log(this.greeting.split(""))
+    }
+}
+var instance = new ThingDoer();
+instance.doThings() // hello world
 
-### (5) 운영: 자동 재균형화와 수동 재균형화
 
-## 4. 요청 라우팅
-서비스 찾기
 
-1. 클라이언트가 아무 노드에 접속하게 한다, 만약 해당 노드에 마침 요청을 적용할 파티션이 있다면 요청 직접 처리할 수 있음
-그렇지않으면 요청을 올바른 노드로 전달해서 응답을 받고 클라이언트에게 응답 전달
-2. 클라이언트의 모든 요청을 라우팅계층으로 먼저 보냄, 라우팅 계층에서는 각 요청을 처리할 노드를 알아내고 그에 따라 해당 노드로 요쳥을 전달
-3. 클라이언트가 파티셔닝 방법과 파티션이 어떤 노드에 할당됐는지 알고있게함
 
-분산 시스템은 주키퍼 같은 별도의 코디네이션 서비스를 사용
+//---------------------------------------
+// 프로토 타입 구축
 
-## 5. 병렬 질의 실행
-대규모 병렬 처리 => 10장
+// 복수의 객체를 생성하는데는 많은 메모리를 필요로함
+
+// 이미정의된 객체를 변경하는 방법 '몽키 패치'
+var Castle = (name) => {
+    this.name = name
+    this.build = ( ) => {
+        console.log(this.name)
+    }
+}
+
+var instance1 = new Castle('winter')
+var instance2 = new Castle('fall')
+instance1.build = () => { console.log('summer')}
+instance1.build() // summer
+instance2.build() // fall
+
+// 객체가 생성될 떄 객체의 정의는 프로토 타입에 상속
+// 함수만이 프로토타입에 할당될 수 있음
+
+var Castle = (name) => {
+    this.name = name
+}
+
+Castle.prototype.build = () => {
+    console.log(this.name)
+}
+
+var instance = new Castle('winter')
+Castle.prototype.build = function () {
+    console.log(this.name.replace("winter", "summer"))
+}
+instance.build() // summer 출력
+
+// Object.create
+// 프로토타입을 기반으로 새로운 객체를 생성할 수 있음
+// 생성된 객체에 추가 필드를 설명하는 propertiesObject 파라미터를 전달할 수도 이음
+// writable : 이필드는 쓰기 가능 여부를 지시
+// configurable : 파일이 객체로부터 제거될 수 있는지, 생성 후에 추가적인 구성을 지원하는지 여부 지시
+// enumerable : 객체의 속성을 열거하는 동안 속성이 나열될 수 있는지를 확인
+// value : 필드의 기본값
+
+// ------------------
+// 상속
+
+let Castle = () => {}
+Castle.prototype.build = () => {    console.log('Castle')   }
+
+let Winterfell = () => {}
+Winterfell.prototype.build = Castle.prototype.build
+Winterfell.prototype.addGodsWood = () => {}
+let winterfell = new Winterfell();
+winterfell.build() // Castle 출력
+
+
+
+// ------------------
+// 모듈
+// 객체를 전역 네임스페이스에 연결
+let Westeros = Westeros || {}
+Westeros.Structures = Westeros.Structures || {}
+Westeros.Structures.Castle = (name) => {
+    console.log('Castle')
+}
+Westeros.Structures.Castle.prototype.Build = () => {
+    console.log('Sex')
+}
+
+let summerfell = new Westeros.Structures.Castle("wintterfell")
+summerfell.Build();
+
+let Other = (() => {
+    function Castle(name) {
+        this.name = name;
+    }
+    Castle.prototype.Build = () => {
+        console.log('Castle')
+    }
+    return Castle
+}) ()
+
+Westeros.Structures.Castle = Castle;
+
+let BaseStructure = (() => {
+    function BaseStructure() {
+    }
+    return BaseStructure
+})()
+Structures.BaseStructure = BaseStructure
+// 노출 모듈 패턴
+// 클래스와 모듈 
+
+class Castle extends Westeros.Structures.BaseStructure {
+    constructor (name, allegience) {
+        super(name)
+    }
+    Build() {
+        super.Build()
+    }
+}
 
