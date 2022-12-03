@@ -1,49 +1,84 @@
-// 7. 신뢰할 수 없는 코드를 쓰면서 불변성 지키기
+// 8. 계층형 설계
 
-// (1) 레거시 코드와 불변성
+// 소프트웨어 설계 : 코드를 만들고 테스트하고, 유지보수하기 쉬운 프로그래밍 방법을 선택하기 위해 미적 감각을 사용하는 것
 
-// 레거시 코드 : 오래전에 만든 것으로, 지금 당장 고칠 수 없어서 그대로 사용해야 하는 코드를 말함
-function add_item_to_cart(name, price) {
-  let item = make_cart_item(name, price);
-  shopping_cart = add_item(shopping_cart, item);
-  let total = calc_total(shopping_cart);
-  set_cart_total_dom(total);
-  update_shipping_icons(shopping_cart);
-  update_tax_dom(total);
+// 계층형 설계 : 소프트웨어를 계층으로 구성하는 기술, 계층에 있는 함수는 바로 아래 계층에 있는 함수를 이용해 정의
+// 컴퓨터 프로그램의 구조와 해석
 
-  // // let cart_copy = deepCopy(shopping_cart)
-  // shopping_cart = deepCopy(cart_copy)
-  // black_friday_promotion(shopping_cart) // 이 코드는 장바구니 값을 바꿈
-  shopping_cart = black_friday_promotion_safe(shopping_cart);
+//계층형 설계 감각을 키우기 위한 입력
+
+// 함수 본문 : 길이, 복잡성, 구체화 단계, 함수 호출, 프로그래밍 언어 기능 사용
+// 계층 구조 : 화살표 길이, 응집도, 구체화 단게
+// 함수 시그니처 : 함수명, 인자 이름, 인잣값, 리턴 값
+
+// 조직화 : 새로운 함수를 어디에 놓을지 결정, 함수를 다른 곳으로 이동
+// 구현 : 구현 바꾸기, 함수 추출하기, 데이터 구조 바꾸기
+// 변경 : 새 코드를 작성할 곳 선택하기, 적절한 수준의 구체화 단계 결정하기
+
+// (1) 계층형 설계 패턴
+// 패턴1 : 직접 구현
+
+// A. 장바구니가 해야 할 동작
+
+function freeTieClip(cart) {
+  // let hasTie = false
+  // let hasTieClip = false
+
+  // for (let i = 0; i < cart.length; i++) {
+  //   let item = cart[i]
+  //   if (item.name === "tie") {
+  //     hasTie = true
+  //   }
+  //   if (item.name === "tie clip") {
+  //     hasTieClip = true
+  //   }
+  // }
+  // if (hasTie && !hasTieClip) {
+  //   let tieClip = make_item("tie clip", 0)
+  //   return add_item(cart, tieClip)
+  // }
+  // return cart
+  let hasTie = isInCart(cart, "tie");
+  let hasTieClip = isInCart(cart, "tie clip");
+  if (hasTie && !hasTieClip) {
+    let tieClip = make_itme("tie clip", 0);
+    return add_item(cart, tieClip);
+  }
+  return cart;
 }
-function black_friday_promotion_safe(cart) {
-  let cart_copy = deepCopy(cart);
-  black_friday_promotion(cart_copy);
-  return deepCopy(cart_copy);
+// =>
+function isInCart(cart, name) {
+  for (let i = 0; i < cart.length; i++) {
+    for (let i = 0; i < cart.length; i++) {
+      if (cart[i].name === name) {
+        return true;
+      }
+    }
+  }
+  return false;
 }
 
-// 방어적 복사
-// A. 원본이 바뀌는 걸 막아줌
-// 깊은 복사를 한 데이터를 안전지대에서 내보냄
+// B. 호출 그래프를 만들어 함수 호출을 시각화하기
+// 함수에서 사용하는 다른 함수와 언어 긴으을 호출 그래프
 
-// (2) 방어적 복사 구현하기
+// C. 줌 레벨
+// - 계층 사이의 상호 관계
+// - 특정 계층의 구현
+// - 특정 함수의 구현
 
-// 방어적 복사를 ㅏㅅ용하면 데이터가 바뀌는 것을 막아서 불변성을 지킬 수 있음
+// 줌 레벨 : 전역, 계층, 함수
+// 장바구니 비즈니스 규칙, 일반적인 비즈니스 규칙, 장바구니 기본동작, 제품에 관한 기본동작, 카피-온-라이트 동작, 자바스크립트 언어기능
 
-// A. 데이터가 안전한 코드에서 나갈 때 복사하기
-// - 불변성 데이터를 위한 깊은 복사본을 만듬
-// - 신뢰할 수 없는 코드로 복사본을 전달
+// 직접 구현 패턴 리뷰
+// - 직접 구현한 코드는 한 단계의 구체화 수준에 관한 문제만 해결
+// - 계층형 설계는 특정 구체화 단계에 집중할 수 있게 도와줌
+// - 호출 그래프는 구체화 단계에 대한 풍부한 단서를 보여줌
+// - 함수를 추출하면 더 일반적인 함수로 만들 수 있음
+// - 일반적인 함수가 많을수록 재사용하기 좋음
+// - 복잡성을 감추지않음
 
-// B. 안전한 코드로 데이터가 들어올 떄 복사하기
-// - 변경될 수 있는 데이터가 들어오면 바로 깊은 복사본을 만들어 안전한 코드로 전달
-// - 복사본을 안전한 코드에서 사용
+// 패턴2 : 추상화 벽
 
-// (3) 카피-온-라이트와 방어적 복사
+// 패턴3 : 작은 인터페이스
 
-// A. 카피-온-라이트
-// - 통제할 수 없는 데이터를 바꿀 때 카피-온-라이트를 씀
-// 얕은 방식
-
-// B.방어적 복사
-// - 신뢰할수 없는 코드와 데이터를 주고받아야할 때 방어적 복사를 씀
-// 깊은 복사
+// 패턴4: 편리한 계층
