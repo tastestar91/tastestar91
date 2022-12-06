@@ -1,91 +1,102 @@
-// 4. 액션에서 계산 빼내기
+// 5. 더 좋은 액션 만들기
 
-function update_shipping_icons() {
-  let buy_buttons = get_buy_buttons_dom(); //A
-
-  for (let i = 0; i < buy_buttons.length; i++) {
-    let button = buy_buttons[i];
-    let item = button.items;
-
-    if (item.price + shopping_car_total >= 20) {
-      button.show_free_shipping_icon();
-    } else {
-      button.hide_free_shipping_icon();
-    }
-  }
-}
-// 재사용하려면 전역 변수에 의존하지않아야함
-// DOM을 사용할 수 있는 곳에서 실행된다고 가정하면 안됨
-// 함수가 결괏값을 리턴해야함
-
-// 액션과 계산 데이터를 구분하기
-
-let shopping_cart = []; //A
-let shopping_cart_total = 0; //A
-
-function add_item_to_cart(name, price) {
-  let shopping_cart = add_item(shopping_cart, name, price);
-  cal_cart_total();
-}
-// =>
-function add_item(cart, name, price) {
-  let new_cart = cart.slice();
-  new_cart.push({
-    name: name,
-    price: price,
-  });
-  return new_cart;
-}
-// 어떤 값을 바꿀 때, 그 값을 복사해서 바꾸는 방법은 불변성을 구현하는 방법 중 하나
-// 카피-온 라이트라고함
-
-function cal_cart_total() {
-  //A
-  // shopping_car_total = 0;
-  // for (let i = 0; i < shopping_cart.length; i++) {
-  //     let item = shopping_cart[i]
-  //     shopping_car_total += item.price;
-  // }
-  shopping_car_total = calc_total(shopping_cart);
-  set_cart_total_dom();
-  update_shipping_icons();
-  update_tax_dom();
+function gets_fress_shipping(cart) {
+  return calc_total(cart) >= 20;
 }
 
 function calc_total(cart) {
-  // => 서브 루틴 추출하기 extract subroutine
   let total = 0;
+
   for (let i = 0; i < cart.length; i++) {
-    let item = cart[i];
-    total += item.price;
+    let item = cart[i]
+    total += item.price
   }
-  return total;
+  return total
 }
 
-function update_tax_dom() {
-  //A
-  set_tax_dom(calc_tax(shopping_cart_total));
+function make_cart_item(name, price) {
+  return {
+    name : name,
+    price : price
+  }
+} // 생성자 함수를 만듬
+
+function update_shipping_icons(cart) {
+  let buttons = get_buy_buttons_dom();
+
+  for (let i = 0; i < buttons.length; i++) {
+    let button = buttons[i]
+    let item = button.item
+
+    // if (get_free_shipping(shopping_cart_total, itme.price)) {
+    //   button.shopping_cart_total()
+    // }
+    // else {
+    //   button.hide_free_shipping_icon()
+    // }
+    let new_cart = add_itme(cart, make_cart_item(name, price))
+    if (gets_fress_shipping(new_cart)) {
+      button.shopping_cart_total()
+    }
+    else {
+      button.hide_free_shipping_icon()
+    }
+  }
 }
-// =>
-function calc_tax(amount) {
-  return amout * 0.1;
+
+// 암묵적 입력과 출력은 적을 수록 좋음!
+function add_item_to_cart(name, price) { // 구매하기
+  let item = make_cart_item(name, price)
+  shopping_cart = add_item(shopping_cart, item)
+  
+  let total = calc_total(shopping_cart)
+  set_cart_total_dom(total)
+  update_shipping_icons(shopping_cart)
+  update_tax_dom(total)
 }
 
-// (1) 함수에는 입력과 출력이 있음
-// 명시적 출력과 암시적 출력
-// 함수에서 암묵적 입력과 출력을 없애면 계산이 됨
-// 암묵적 입력은 함수의 인자로 바꾸고, 출력은 함수의 리턴값으로 바꾸면 됨
+function set_cart_total_dom(total) {
+  total
+}
 
-// (2) 액션에서 또 다른 계산 뺴내기
+function update_tax_dom(total) {
+  set_tax_dom(calc_total(total))
+}
 
-// 계산 추출하기
-// 코드를 선택하고 빼냅니다
-// 암묵적 입력과 출력을 찾습니다.
-// 입력은 인자로 바꾸고 출력은 리턴값으로 바꿉니다
 
-// 액션은 암묵적인 입력 또는 출력을 가지고 있음
-// 계산의 정의에 따르면 계산은 암묵적인 입력이나 출력이 없어야함
-// 공유변수는 일반적으로 암묵적 입력 또는 출력이 됨
-// 암묵적 입력은 인자로 바꿀 수 있음
-// 암묵적 출력은 리턴값으로 바꿀 수 있음
-// 함수형 원칙을 적용하면 액션은 줄어들고 계산은 늘어남
+
+// '=================='
+
+function add_item(cart, item) {
+  // let new_cart = cart.slice()
+  // // new_cart.push({
+  // //   name : name,
+  // //   price : price
+  // // })
+  // new_cart.push(item)
+  // return new_cart
+  return add_element_last(cart, item)
+}
+
+function add_element_last(array, elem) {
+  let new_array = array.slice()
+  new_array.push(elem)
+  return new_array
+}
+// 재사용 할 수 있는 유틸리티 함수
+
+function calc_tax (amount) {
+  return amount * 0.10
+}
+
+// (1) 설계는 엉켜있는 코드를 푸는 것
+
+// 재사용, 유지보수, 테스트
+
+// 계산을 유틸리티, 장바구니, 비즈니스 규칙으로 나눔, 설계 기술을 미리 보여주기 위해서
+
+// 암묵적 입력과 출력은 인자와 리턴 값으로 바꿔 없애는게 좋음
+
+// 설계는 엉켜있는 것을 푸는 것, 풀려있는 건 다시 합칠 수 있음
+// 개념을 중심으로 쉽게 구현할 수있음
+

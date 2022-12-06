@@ -1,91 +1,168 @@
-// 4. 액션에서 계산 빼내기
+// 6. 변경 가능한 데이터 구조를 가진 언어에서 불변성 유지하기
 
-function update_shipping_icons() {
-  let buy_buttons = get_buy_buttons_dom(); //A
+// 쓰기 동작은 불변성 원칙에 따라 구현해야함
+// 불변성 원칙 => 카피 - 온 - 라이트 copy-on-write
 
-  for (let i = 0; i < buy_buttons.length; i++) {
-    let button = buy_buttons[i];
-    let item = button.items;
+// 카피-온-라이트 원칙 세 단계
 
-    if (item.price + shopping_car_total >= 20) {
-      button.show_free_shipping_icon();
-    } else {
-      button.hide_free_shipping_icon();
+// 1.복사본 만들기
+// 2.복사본 변경하기(원하는 만큼)
+// 3.복사본 리턴하기
+
+function add_element_last(array, elem) {
+  let new_array = array.slice() //복사본 만들기
+  new_array.push(elem) // 복사본 변경
+  return new_array // 복사본 리턴
+}
+
+// copy-on-write로 쓰기를 일기로 바꾸기
+
+function remove_item_by_name(cart, name) {
+  let new_cart = cart.slice()
+  let idx = null;
+
+  for (let i = 0 ; i < cart.length; i++) {
+    if (cart[i].name === name) {
+      idx = i
     }
   }
-}
-// 재사용하려면 전역 변수에 의존하지않아야함
-// DOM을 사용할 수 있는 곳에서 실행된다고 가정하면 안됨
-// 함수가 결괏값을 리턴해야함
-
-// 액션과 계산 데이터를 구분하기
-
-let shopping_cart = []; //A
-let shopping_cart_total = 0; //A
-
-function add_item_to_cart(name, price) {
-  let shopping_cart = add_item(shopping_cart, name, price);
-  cal_cart_total();
-}
-// =>
-function add_item(cart, name, price) {
-  let new_cart = cart.slice();
-  new_cart.push({
-    name: name,
-    price: price,
-  });
-  return new_cart;
-}
-// 어떤 값을 바꿀 때, 그 값을 복사해서 바꾸는 방법은 불변성을 구현하는 방법 중 하나
-// 카피-온 라이트라고함
-
-function cal_cart_total() {
-  //A
-  // shopping_car_total = 0;
-  // for (let i = 0; i < shopping_cart.length; i++) {
-  //     let item = shopping_cart[i]
-  //     shopping_car_total += item.price;
+  if (idx !== null) {
+    return removeItems(cart, idx, 1)
+  // for (let i = 0; i < cart.length; i++) {
+  //   if (cart[i].name === name) {
+  //     idx = i
+  //   }
+  //   if (idx !== null) {
+  //     cart.splice(idx, 1) // 배열에서 항목을 삭제하는 메서드
+  //   }
   // }
-  shopping_car_total = calc_total(shopping_cart);
-  set_cart_total_dom();
-  update_shipping_icons();
-  update_tax_dom();
-}
-
-function calc_total(cart) {
-  // => 서브 루틴 추출하기 extract subroutine
-  let total = 0;
-  for (let i = 0; i < cart.length; i++) {
-    let item = cart[i];
-    total += item.price;
   }
-  return total;
+  return cart
 }
 
-function update_tax_dom() {
-  //A
-  set_tax_dom(calc_tax(shopping_cart_total));
+
+function delete_handler(name) {
+  // remove_item_by_name(shopping_cart, name) // 전역 변수 변경
+  let total = calc_total(shopping_cart)
+  set_cart_total_dom(total)
+  update_shipping_icons(shopping_cart)
+  update_tax_dom(total)
+
+  shopping_cart = remove_item_by_name(shopping_cart, name)
 }
-// =>
-function calc_tax(amount) {
-  return amout * 0.1;
+
+function removeItems(array, idx, count) {
+  let copy = array.slice()
+  copy.splice(idx, count)
+  return copy
 }
 
-// (1) 함수에는 입력과 출력이 있음
-// 명시적 출력과 암시적 출력
-// 함수에서 암묵적 입력과 출력을 없애면 계산이 됨
-// 암묵적 입력은 함수의 인자로 바꾸고, 출력은 함수의 리턴값으로 바꾸면 됨
 
-// (2) 액션에서 또 다른 계산 뺴내기
 
-// 계산 추출하기
-// 코드를 선택하고 빼냅니다
-// 암묵적 입력과 출력을 찾습니다.
-// 입력은 인자로 바꾸고 출력은 리턴값으로 바꿉니다
+let mailing_list = []
 
-// 액션은 암묵적인 입력 또는 출력을 가지고 있음
-// 계산의 정의에 따르면 계산은 암묵적인 입력이나 출력이 없어야함
-// 공유변수는 일반적으로 암묵적 입력 또는 출력이 됨
-// 암묵적 입력은 인자로 바꿀 수 있음
-// 암묵적 출력은 리턴값으로 바꿀 수 있음
-// 함수형 원칙을 적용하면 액션은 줄어들고 계산은 늘어남
+function add_contact(email) {
+  let new_mailing_list = mailing_list.slice()
+  new_mailing_list.push(email)
+  // mailing_list.push(email)
+  return new_mailing_list
+}
+
+function submit_form_handler(event) {
+  let form = event.target
+  let email = form.elements["email"].value;
+  mailing_list = add_contact(mailing_list, email)
+}
+
+
+
+// (2) 읽기와 쓰기 동작 같이
+// - 읽기와 쓰기 함수로 각각 분리
+// - 함수에서 값을 두 개 리턴
+
+// A. 읽기와 쓰기 동작으로 분리하기
+
+function first_element(array) {
+  return array[0]
+}
+// 쓰기 동작을 카피 - 온 - 라이트로 바꾸기
+
+function drop_fisrt(array) {
+  array.shift()
+  // => 
+  let array_copy = array.slice()
+  array_copy.shift()
+  return array_copy
+}
+
+
+function shift(array) {
+  return array.shift()
+  // =>
+  let array_copy = array.slice()
+  let first = array_copy.shift()
+  return {
+    first : first, 
+    array : array_copy
+  }
+
+  return {
+    first : first_element(array),
+    array : drop_fisrt(array)
+  }
+}
+
+
+// (3) 불변 데이터 구조를 읽는 것은 계산입니다.
+
+// - 변경 간으한 데이터를 읽는 것은 액션
+// - 쓰기는 데이터를 변경 가능한 구조로 만듬
+// - 어떤 데이터에 쓰기가 없다면 데이터는 변경 불가능한 데이터
+// - 불변 데이터 구조를 읽는 것은 계산 ( 불변형으로 만들었다면 데이터에 모든 읽기는 계산 )
+// - 쓰기를 읽기로 바꾸면 코드에 계산이 많아집니다 ( 액션이 줄어듬 )
+
+// 불변 데이터 구조
+
+// 언제든 최적화 할 수 있음
+// 가비지 콜렉터는 매우 빠름
+// 많이 복사하지 않음
+// 함수형 프로그래밍 언어네느 빠른 구현체가 있음
+
+function setPrice(item, new_price) {
+  item.price = new_price
+  // =>
+  let item_copy = Object.assign({}, item)
+  item_copy.price = new_price
+  return item_copy
+}
+
+// 두 개의 중첩된 데이터 구조가 어떤 참조를 공유한다면 '구조적 공유'임
+// 데이터가 바뀌지않는 불변 데이터 구조라면 구조적 공유는 안전, 구조적 공유는 메모리를 적게 사용하고, 모든 것을 복사하는 것보다 빠름
+
+
+
+// (4) 중첩된 쓰기를 읽기로 바꾸기
+
+function setPriceByName(cart, name, price) {
+  let cartCopy = cart.slice();
+
+  for (let i = 0; i < cartCopy.length; i++) {
+    if (cartCopy[i].name === name ) {
+      cartCopy[i] = setPrice(cartCopy[i], price)
+    } 
+    return cartCopy
+  }
+  // for (let i = 0; i < cart.length; i++) {
+  //   if (cart[i].name === name) {
+  //     cart[i].price = price
+  //   }
+  // }
+}
+
+// 중첩 데이터 : 데이터 구조 안에 데이터 구조가 있는 걸 말함, 안쪽 데이터와 최상위 데이터라는 용어를 사용
+// 얕은 복사 : 중첩 데이터에서 최상위 데이터 구조만 복사
+// 구조적 공유 : 두 중첩된 데이터 구조에서 안쪽 데이터가 같은 데이터를 참조
+
+// 보일러플레이트 코드를 줄이기 위해 기본적인 배열과 객체 동작에 대한 카피-온-라이트 버전을 만들어 두는 것이 좋음
+// 보일러 플레이트 코드는 여러 곳에서 비슷한 코드가 반복되는 걸 말함
+

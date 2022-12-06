@@ -1,91 +1,52 @@
-// 4. 액션에서 계산 빼내기
+// 7. 신뢰할 수 없는 코드를 쓰면서 불변성 지키기
 
-function update_shipping_icons() {
-  let buy_buttons = get_buy_buttons_dom(); //A
+// (1) 레거시 코드와 불변성
 
-  for (let i = 0; i < buy_buttons.length; i++) {
-    let button = buy_buttons[i];
-    let item = button.items;
+// 레거시 코드 : 오래전에 만든 것으로, 지금 당장 고칠 수 없어서 그대로 사용해야 하는 코드를 말함
+function add_item_to_cart (name, price) {
+  let item = make_cart_item(name, price) 
+  shopping_cart = add_item(shopping_cart, item)
+  let total = calc_total(shopping_cart)
+  set_cart_total_dom(total)
+  update_shipping_icons(shopping_cart)
+  update_tax_dom(total)
 
-    if (item.price + shopping_car_total >= 20) {
-      button.show_free_shipping_icon();
-    } else {
-      button.hide_free_shipping_icon();
-    }
-  }
+  // // let cart_copy = deepCopy(shopping_cart)
+  // shopping_cart = deepCopy(cart_copy)
+  // black_friday_promotion(shopping_cart) // 이 코드는 장바구니 값을 바꿈
+  shopping_cart = black_friday_promotion_safe(shopping_cart)
 }
-// 재사용하려면 전역 변수에 의존하지않아야함
-// DOM을 사용할 수 있는 곳에서 실행된다고 가정하면 안됨
-// 함수가 결괏값을 리턴해야함
-
-// 액션과 계산 데이터를 구분하기
-
-let shopping_cart = []; //A
-let shopping_cart_total = 0; //A
-
-function add_item_to_cart(name, price) {
-  let shopping_cart = add_item(shopping_cart, name, price);
-  cal_cart_total();
-}
-// =>
-function add_item(cart, name, price) {
-  let new_cart = cart.slice();
-  new_cart.push({
-    name: name,
-    price: price,
-  });
-  return new_cart;
-}
-// 어떤 값을 바꿀 때, 그 값을 복사해서 바꾸는 방법은 불변성을 구현하는 방법 중 하나
-// 카피-온 라이트라고함
-
-function cal_cart_total() {
-  //A
-  // shopping_car_total = 0;
-  // for (let i = 0; i < shopping_cart.length; i++) {
-  //     let item = shopping_cart[i]
-  //     shopping_car_total += item.price;
-  // }
-  shopping_car_total = calc_total(shopping_cart);
-  set_cart_total_dom();
-  update_shipping_icons();
-  update_tax_dom();
+function black_friday_promotion_safe(cart) {
+  let cart_copy = deepCopy(cart)
+  black_friday_promotion(cart_copy)
+  return deepCopy(cart_copy)
 }
 
-function calc_total(cart) {
-  // => 서브 루틴 추출하기 extract subroutine
-  let total = 0;
-  for (let i = 0; i < cart.length; i++) {
-    let item = cart[i];
-    total += item.price;
-  }
-  return total;
-}
+// 방어적 복사
+// A. 원본이 바뀌는 걸 막아줌
+// 깊은 복사를 한 데이터를 안전지대에서 내보냄
 
-function update_tax_dom() {
-  //A
-  set_tax_dom(calc_tax(shopping_cart_total));
-}
-// =>
-function calc_tax(amount) {
-  return amout * 0.1;
-}
 
-// (1) 함수에는 입력과 출력이 있음
-// 명시적 출력과 암시적 출력
-// 함수에서 암묵적 입력과 출력을 없애면 계산이 됨
-// 암묵적 입력은 함수의 인자로 바꾸고, 출력은 함수의 리턴값으로 바꾸면 됨
+// (2) 방어적 복사 구현하기
 
-// (2) 액션에서 또 다른 계산 뺴내기
+// 방어적 복사를 ㅏㅅ용하면 데이터가 바뀌는 것을 막아서 불변성을 지킬 수 있음
 
-// 계산 추출하기
-// 코드를 선택하고 빼냅니다
-// 암묵적 입력과 출력을 찾습니다.
-// 입력은 인자로 바꾸고 출력은 리턴값으로 바꿉니다
+// A. 데이터가 안전한 코드에서 나갈 때 복사하기
+// - 불변성 데이터를 위한 깊은 복사본을 만듬
+// - 신뢰할 수 없는 코드로 복사본을 전달
 
-// 액션은 암묵적인 입력 또는 출력을 가지고 있음
-// 계산의 정의에 따르면 계산은 암묵적인 입력이나 출력이 없어야함
-// 공유변수는 일반적으로 암묵적 입력 또는 출력이 됨
-// 암묵적 입력은 인자로 바꿀 수 있음
-// 암묵적 출력은 리턴값으로 바꿀 수 있음
-// 함수형 원칙을 적용하면 액션은 줄어들고 계산은 늘어남
+// B. 안전한 코드로 데이터가 들어올 떄 복사하기
+// - 변경될 수 있는 데이터가 들어오면 바로 깊은 복사본을 만들어 안전한 코드로 전달
+// - 복사본을 안전한 코드에서 사용
+
+
+
+// (3) 카피-온-라이트와 방어적 복사
+
+// A. 카피-온-라이트
+// - 통제할 수 없는 데이터를 바꿀 때 카피-온-라이트를 씀
+// 얕은 방식
+
+// B.방어적 복사
+// - 신뢰할수 없는 코드와 데이터를 주고받아야할 때 방어적 복사를 씀
+// 깊은 복사
