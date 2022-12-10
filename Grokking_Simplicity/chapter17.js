@@ -1,71 +1,41 @@
-// 16. 타임라인 사이에 자원 공유하기
+// 17. 타임라인 조율하기
 
-// DOM이 업데이트 되는 순서를 보장
+// 액션을 확인하기
+// 모든 액션을 그리기
+// 단순화하기
 
-// 큐에 처리할 작업을 큐에 넣기
+// 1 cost_ajax 응답의 크기가 커서 다운로드하는데 시간이 오래 걸림
+// 2 배송 api 서버보다 cost_ajax를 처리하는 서버가 더 바쁨
+// 3 이동중이 ㄴ차 안에서 핸드폰으로 cost_ajax요청을 보냈지만, 기지국이 바뀌는 동안 지연이 생김
 
-let queue_items = [];
-let working = false;
+// 코드에 cut 적용하기
 
-function update_total_queue(cart) {
-  queue_items.push(cart);
+
+function calc_cart_worker(cart, callback) {
+  let total = 0 
+  let done = Cut(2, () => {
+    callback(total)
+  })
+  cost_ajax(cart, (total) => {
+    update_total_dom(total);
+    done(total);
+    });
+  shippint_ajax(cart, (shipping) => {
+    total += shipping
+    done()
+  })
 }
 
-// function Queue {
-//   function runNext() {
-//    if (working) {
-//      return
-//     }
-//    if (queue_items.length == 0) {
-//     return
-//    }
-//    working = true
-//    let cart = queue_items.shift()
-//    // calc_cart_total(cart, (update_total_dom))
-//    calc_cart_total(cart, (total) => {
-//      update_total_dom(total)
-//      working = false
-//      runNext()
-//    })
-//   }
+let update_total_queue = Queue(1, calc_cart_worker)
 
-//   return (cart) => {
-//     queue_items.push(cart)
-//     setTimeout(runNext, 0)
-//   }
-// }
-let update_total_queue = Queue();
-// function update_total_queue(cart) {
-//   queue_items.push(cart)
-//   setTimeout(runNext, 0)
-// }
-
-// (1) 큐를 재사용할 수 있게 만들기
-
-function Queue() {
-  let queue_items = [];
-  let working = false;
-
-  function runNext() {
-    if (working) {
-      return;
+function JustOnce(action) {
+  let alreadyCalled = false;
+  return function (a, b, c) {
+    if (alreadyCalled) {
+      return
     }
-
-    if (queue_items.length === 0) {
-      return;
+    else {
+      return action(a, b, c)
     }
-
-    let cart = queue_items.shift();
-
-    function worker(cart, done) {
-      calc_cart_total(cart, (total) => {
-        update_total_dom(total);
-        done(total);
-      });
-    }
-    worker(cart, () => {
-      working = false;
-      runNext();
-    });
   }
 }

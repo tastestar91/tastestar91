@@ -42,7 +42,8 @@ let update_total_queue = Queue();
 
 // (1) 큐를 재사용할 수 있게 만들기
 
-function Queue() {
+// function Queue(worker) {
+function DroppingQueue(max, worker) {
   let queue_items = [];
   let working = false;
 
@@ -55,17 +56,38 @@ function Queue() {
       return;
     }
 
-    let cart = queue_items.shift();
+    let item = queue_items.shift();
+    
+    worker(item.data, (val) => {
+      working = false;
+      runNext();
+      setTimeout(item.callback, 0, val)
+    });
 
-    function worker(cart, done) {
+    return function (data, callback) {
+      queue_items.push({
+        data: data,
+        callback : callback || function() {}
+      })
+      while(queue_items.length > max) {
+        queue_items.shift()
+      }
+      setTimeout(runNext, 0)
+    }
+  }
+}
+
+function calc_cart_worker(cart, done) {
       calc_cart_total(cart, (total) => {
         update_total_dom(total);
         done(total);
       });
     }
-    worker(cart, () => {
-      working = false;
-      runNext();
-    });
-  }
-}
+
+let update_total_queue = Queue(1, calc_cart_worker)
+
+// (2) 작업이 끝났을 떄 실행하는 콜백을 받기
+
+// (3) 작업이 완료되었을 때 콜백 부르기
+
+// QUEUE느느 동시성 기본형, 
