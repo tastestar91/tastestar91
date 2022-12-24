@@ -388,4 +388,146 @@ ORDER BY 뒤에 숫자 값이 아닌 문자열 상수를 사용하는 경우, �
 
 
 11.4.10.3.2 IN 비교(IN (subquery))
+테이블의 레코드가 다른 테이블의 레코드를 이용한 표현식과 일치하는지 체크하는 형태를 '세미 조인'이라고 함
 
+- 테이블 풀-아웃
+- 퍼스트 매치
+- 루스 스캔
+- 구체화
+- 중복제거
+
+11.4.10.3.3 NOT IN 비교(NOT IN(subquery))
+안티 세미 조인
+
+- NOT EXISTS
+- 구체화
+
+11.4.11 CTE(Common Table Expression)
+
+11.4.11.1 비 재귀적 CTE(Non-Recursive CTE)
+
+11.4.12 윈도우 함수(Window Function)
+
+현재 레코드를 기준으로 연관된 레코드 집합의 연산을 수행, 
+집계함수는 주어진 그룹별로 하나의 레코드로 묶어서 출력하지만 윈도우 함수는 조건에 일치하는 레코드 건수는 변하지않고 그대로 유지
+윈도우 함수는 결과 집합을 그대로 유지하면서 하나의 레코드 연산에 다른 레코드의 칼럼값을 참조할 수 있다
+
+11.4.12.1 쿼리 각 절의 실행 순서
+
+11.4.12.2 윈도우 함수 기본 사용법
+OVER 절에 의해 만들어진 그룹을 파티션 또는 윈도우라고함
+
+11.4.12.3 윈도우 함수
+집계함수와 비 집계함수 모두 사용할 수 있음
+
+11.4.12.3.1 DENSE_RANK()와 RANK(), ROW_NUMBER()
+ORDER BY를 기준으로 매겨진 순위를 반환, 
+DENSE_RANK() 동점인 레코드를 1건으로 가정하고 순위를 매김, 연속된 순위를 가짐
+ROW_NUMBER() 똑같이 순위를 매기지만 각 레코드의 고유한 순번을 반환, 동점에 대한 고려없이 정렬된 순서대로 레코드 번호를 반환 
+
+11.4.12.3.2 LAG()와 LEAD()
+LAG*() 함수는 파티션 내에서 현재 레코드를 기준으로 n번째 이전 레코드를 반환, LEAD()함수 반대로 N번쨰 이후 레코드를 반환
+
+11.4.12.4 윈도우 함수와 성능
+
+SELECT MAX(from_date) OVER(PARTITION BY emp_no) AS max_from_date FROM salaries;
+
+SELECT MAX(from_date) FROM salaries GROUP BY emp_no
+
+11.4.13 잠금을 사용하는 SELECT
+
+FOR SHARE : SELECT 쿼리로 읽는 레코드에 대해서 읽기 잠금을 걸고
+FOR UPDATE : SELECT 쿼리가 읽은 레코드에 대해서 쓰기 잠금을 검
+
+11.4.13.1 잠금 테이블 선택
+
+SELECT * FROM employees e
+INNER JOIN dept_emp de ON de.demp_no = e.emp_no
+INNER JOIN departments d ON d.dept_no=de.dept_no
+WHERE e.emp_no=10001
+FOR UPDATE OF e;
+
+11.4.13.2 NOWAIT & SKIP LOCKED
+
+SELECT * FROM employees WHERE emp_no = 10001 FOR UPDATE NOWAIT;
+=> 다른 트랜잭션에 의해 잠겨진 상태라면 에러를 반환하면서 쿼리 즉시 종료
+
+SKIP LOCKED: SELECT 하려는 레코드가 다른 트랜잭션에 의해 이미 잠겨진 상태라면 에러를 반환하지않고 잠긴 레코드는 무시하고 잠금이 걸리지않은 레코드만 가져옴
+
+
+11.5 INSERT
+
+11.5.1 고급 옵션
+
+11.5.1.1 INSERT IGNORE
+저장하는 레코드의 프라이머리키나 유니크 인덱스 칼럼의 값이 이미 테이블에 존재하는 레코드와 중복되는 경우, 저장하는 레코드으 칼럼이 테이블의 칼럼과 호환되지 않는 경우 모두 무시하고 다음 레코드를 처리할 수 있게 해줌
+
+11.5.1.2 INSERT ..ON DUPLICATE KEY UPDATE
+프라이머리 키나 유니크 인덱스의 중복이 발생하면 UPDATE문장의 역할을 수행하게 해줌
+
+
+11.5.2 LOAD DATE 명령 주의 사항
+데이터를 빠르게 적재할 수 있ㄴ느 방법
+- 단일 스레드로 실행, 단일 트랜잭션으로 실행
+
+11.5.3 성능으 ㄹ위한 테이블 구조
+
+11.5.3.1 대량 INSERT 성능
+레코드들을 프라이머 키값 기준으로 미리 정렬해서 insert문장을 구성하는게 성능에 도움됨
+
+11.5.3.2 프라이머리 키 선정
+INSERT 많은 테이블에 대해서는 인덱스의 개수 최소화하는게 좋음
+
+11.5.3.3 Auto-increment 칼럼
+
+자동 증가 값을 프라이머리 키로 해서 테이블을 생성하는 건, MySQL에서 가장 빠른 INSERT를 보장하는 방법
+
+11.6 UPDATE와 DELETE
+
+11.6.1 UPDATE .. ORDER BY .. LIMIT n
+
+11.6.2 JOIN UPDATE
+
+11.6.3 여러 레코드 UPDATE
+레코드 생성 문법을 이용해 서로 다른 값 을 업데이트할수 있음
+
+
+11.6.4 JOIN DELETE
+
+11.7 스키마 조작(DDL)
+
+모든 오브젝트를 생성하거나 변경하는 쿼리 DDL
+11.7.1 온라인 DDL
+
+11.7.1.1 온라인 DDL 알고리즘
+다른 커넥션에서 해당 테이블의 데이터를 변경하거나 조회하는 작업을 가능하게 해줌
+
+ALTAL TABLE 명령을 실행하면 mySQL 서버는 다음과 같은 순서로 스키마 변경에 적합한 알고리즘 찾음
+- algorithm=INSTANT로 스키마 변경이 가능한지 확인
+- algoritm=INPLACE로 스키마 변경이 가능한지 확인
+- ALGORITHM=COPY 알고리즘 선택
+
+- INSTANT : 테이블의 데이터는 전혀 변경하지않고, 메타데이터만 변경하고 작업을 완료
+
+- INPLACE : 데이터를 복사하지ㅏㄴㅎ고 스키마 변경을 실행
+
+- COPY : 변경된 스키마를 적용한 임시 테이블을 생성, 테이블의 레코드를 모두 임시 테이블로 복사한ㄴ후 최종적으로 임시 테이블을 RENAME해서 스키마 변경을 완료
+
+레코드의 리빌드가 필요한 경우 Data Reorganizing(데이터 재구성) Table Rebuild(테이블 리빌드)
+
+- 데이터 재구성 : 잠금을 필요로 하지않기 떄문에읽고 쓰기는 가능, 여전히 테이블의 레코드 건수에 따라 상당히 많은 시간이 소요
+- 데이터 재구성 필요치않은 경우: INPLCAE 알고리즘을 사용하지만 INSTANT 알고리즘과 비슷하게 빨리 작업 완료
+
+11.7.1.2 온라인 처리 가능한 스키마 변경
+
+11.7.1.3 INPLACE 알고리즘
+
+- INPLACE 스키마 변경이 지원되는 스토리지 엔진의 테이블인지 확인
+- INPLACE 스키마 변경 준비
+- 테이블 스키마 변경 및 새로운 DML 로깅
+- 로그 적용
+- INPLACE 스키마 변경 완료
+
+11.7.1.4 온라인 DDL의 실패 케이스
+
+11.7.1.5 온라인 DDL 진행 상황 모니터링
