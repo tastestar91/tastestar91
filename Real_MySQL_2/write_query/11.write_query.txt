@@ -1,0 +1,391 @@
+11. 쿼리 작성 및 최적화
+
+
+11.1 쿼리 작성과 연관된 시스템 변수
+
+11.1.1 SQL 모드
+
+* sql_mode 기본 값
+- ONLY_FULL_GROUP_BY : GROUP_BY 절이 사용된 문장의 SELECT 절에는 GROUP BY 절에 명시된 칼럼과 집계 함수만 사용할 수 있음
+
+- STRICT_TRANS_TABLES 
+
+- NO_ZERO_IN_DATE
+
+- NO_ZERO_DATE
+
+- ERROR_FOR_DIVISION_BY_ZERO
+
+- NO_ENGINE_SUBSTITUTION
+
+- STRICT_ALL_TABLES & STRICT_TRANS_TABLES : INSERT나 UPDATE 데이터 변경하는 경우, 타입이 다를 때 자동으로 타입 변경 수행
+활성화할 것을 권장
+
+- ANSI_QUOTES : 홀 따옴표와 쌍 따옴표
+
+- PIPE_AS_CONCAT: ||는 OR 연산자와 같은 의미로 사용, 설정하면 문자열 연결 연산자 사용할 수 없음
+
+- PAD_CHAR_TO_FULL_LENGTH : 유효문자열 뒤에 공백문자는 제거되어 반환, 
+
+- NO_BACKSLASH_ESCAPES : 역슬래시 문자를 문자의 이스케이프 용도로 사용하지 못함
+
+- IGNORE_SPACE : 스토어드 프로시저나 함수의 이름 뒤에 공백이 있으면, 에러가 출력될 수 있음, 공백까지도 함수의 이름으로 간주
+
+- REAL_AS_FLOAT : REAL타입 FLOAT 타입의 동의어로 바뀜
+
+- NO_ZERO_IN_DATE & NO_ZERO_DATE : 옵션이 활성화되면 잘못된 날짜를 저장하는 것이 불가능 DATETIME
+
+- ANSI : 서버가 SQL 표준에 맞게 동작하게 만들어줌
+
+- TRADITIONAL : 엄격한 방법으로 SQ의 작동 제어
+
+11.1.2 영문 대소문자 구분
+
+대소문자 구문의 영향받지않게 할려면, lower_case_table_names 시스템 변수에 설정하면 됨
+
+11.1.3 MySQL 예약어
+
+항상 역따옴표나 쌍따옴표로 감싸야함, 
+
+11.2 메뉴얼의 SQL 문법 표기를 읽는 방법
+
+11.3 MySQL 연산자와 내장 함수
+
+11.3.1 리터럴 표기법 문자열
+
+11.3.1.1 문자열
+
+11.3.1.2 숫자
+
+따옴표 없이 숫자값을 입력하면 됨
+
+11.3.1.3 날짜
+mysql 서버가 자동으로 date나 datetime값으로 변환
+
+11.3.1.4 불리언
+true 또는 false 같은 불리언 값을 정수로 매핑해서 사용
+
+11.3.2 MySQL 연산자와
+
+11.3.2.1 동등 비교 
+Null-Safe 비교 연산자
+<=>
+
+11.3.2.2 부정(Not-Equal) 비교(<>, !=)
+같지않다 , 비교를 위한 연산자는 <> 일반적으로 많이 사용
+
+11.3.2.3 NOT 연산자(!)
+
+11.3.2.4 AND와 OR연산자
+
+11.3.2.5 나누기와 나머지 연산자
+
+11.3.2.6 REGEXP 연산자
+^ : 문자열 시작을 표시
+$ : 문자열 끝을 표시
+[] : 문자 그룹을 표시 부분확인
+() : 문자열 그룹을 표시, 모두 확인
+
+인덱스 레인지 스캔을 사용할 수 없음
+
+11.3.2.7 LIKE 연산자
+어떤 상수 문자열이 있는지 없는지 정도를 판단하는 연산자
+
+LIKE 연산자가 %, _가 검색어 뒤쪽에 있다면 인덱스 레인즈 스캔 사용할 수 있지만 앞에 있다면 사용 불가
+
+11.3.2.8 BETWEEN 연산자
+BETWEEN이 선형으로 인덱스를 검색, 
+IN은 동등 비교를 여러번 수행
+
+11.3.2.9 IN 연산자
+
+8.0 이후 버전부터는 IN절에 튜플을 그대로 나열해도 인덱스를 사용할 수 있게 개선
+
+11.3.3 MySQL 내장 함수
+
+MYSQL 에서 기본적으로 제공하는 내장 함수
+사용자가 직접 작성해서 추가할 수 있는 사용자 정의 함수
+
+11.3.3.1 NULL 값 비교 및 대체 (IFNULL, ISNULL)
+
+IFNUL() 칼럼이나 표식의 값이 NULL 인지 비교하고, 더른 값으로 대체하는 용도로 사용할 수 있는 함수
+
+11.3.3.2 현재 시각 조회(NOW, SYSDATE)
+
+NOW() 함수는 같은 값을 가지지만 SYSDATE() 하나의 SQL내에서 호출되는 시점에 따라 결괏값 달라짐
+
+- STSDATE() SQL은 레플리카 서버에 안정적으로 복제되지 못함
+- 칼럼은 인덱스를 효율적으로 사용하지못함
+
+11.3.3.3 날짜와 시간의 포맷(DATE_FORMAT, SRT_TO_DATE)
+ 
+원하는 형태의 문자열로 변환해야 할 때 사용
+
+'SELET DATE_FORMAT(NOW(), %Y-%m-%d)' AS current_dt;
+
+11.3.3.4 날짜와 시간의 연산(DATE_ADD, DATE_SUB)
+
+'SELECT DATE_ADD(NOW(), INTERVAL1 DAT) AS tomorrow:
+
+11.3.3.5 타임스탬프 연산(UNIX_TIMESTAMP, FROM_UNIXTIME)
+
+11.3.3.6 문자열 처리(RPAD, LPAD/ RTRIM, LTRIM, TRIM)
+
+문자열의 좌측 또는 우측에 문자를 덧붙여서 지정된 길이의 문자열로 만드는 함수
+'SELECT RPAD('Cloy', 10, '_')' => Cloy__________
+
+11.3.3.7 문자열 결합
+
+여러 개의 문자열을 연결해서 하나의 문자열로 반환하는 함수, 인자의 개수 제한이 없음
+SELECT CONCAT('BA', 'BO') AS NAME => BABO
+
+11.3.3.8 GROUB BY 문자열 결합(GROUP_CONCAT)
+여러 레코드의 값을 병합해서 하나의 값을 만들어내느 함수 
+
+SELECT GROUP_CONCAT(dept_no) FROM departments;
+=> d009, d005, d002, d003, d001, d004, d006
+
+11.3.3.9 값으 ㅣ비교와 대체(CASE WHEN ... THEN ...END)
+
+'SELECT emp_no, first_name CASE gender WHEN 'M' THEN 'MAN'
+WHEN 'F' THEN 'WOMAN' ELSE 'Unknown' END AS gender FROM employees LIMIT 10;
+
+어떠한 경우에만 서브쿼리를 실행하고 싶을 떄 사용
+
+11.3.3.10 타입의 변환(CAST, CONVERT)
+
+11.3.3.11 이진값과 16진수 문자열
+
+11.3.3.12 암호화 및 해시 함수(MD5, SHA, SHA2)
+
+인자로 전달할 문자열을 각각 지정된 비트 수의 해시값을 만들어내는 함수
+
+11.3.3.13 처리대기(SLEEP)
+
+11.3.3.14 벤치마크(BENCHMARK)
+디버깅, 간단한 함수 성능테스트용
+
+11.3.3.15 IP 주소 변환(INET)ATON, INET_NTOA)
+
+IPv4주소를 문자열이 아닌 부호 없는 정수타입에 저장할 수 있게 제공
+INET_ATON() : 문자열로 구성된 IPv 주소를 정수형으로 변환하는 함수
+INET_NTOA() : 정수형의 IPv4주소를 사람이 읽을 수있는 형태 '.'으로 구분된 문자열로 반환하는 함수
+
+11.3.3.16 JSON 포맷
+SELECT JSON_PRETTY(doc) FROM employeedocs WHERE emp_no=10006
+
+11.3.3.17 JSON 필드 크기
+JSON_STORAGE)SIZE() 함수 제공
+
+11.3.3.18 JSON 필드 추출(JOSN_EXTRACT)
+첫 번쨰 인자 JSON 데이터가 저장된 칼럼 또는 JSON 도큐먼트 자체
+두 번쨰 인자 가져오고자 하는 JSON 경로를 명시
+
+11.3.3.19 JSON 오브젝트 포함 여부 확인
+JSON도큐먼트 또는 지정된 JSON경로에 JSON필드를 가지고 있는지 확인하는 함수
+
+첫 번째 인자 주어진 JSON 도큐먼트에 두 번째 인자 JSON 오브젝트가 존재하는지 검사하는 함수
+
+11.3.3.20 JSON 오브젝틀르 생성(JSON_OBJECT)
+
+11.3.3.21 JSON 칼럼으로 집계(JSON_OBJECTAGG && JSON_ARRAYAGG)
+
+첫 버내 인자는 키, 두번쨰 인자는 VALUE 키-밸류 쌍의 JSON 도큐먼트를 만들어 반환
+
+11.3.3.22 JSON 데이터를 테이블로 변환(JSON_TABLE)
+
+
+
+
+
+11.4 SELECT
+11.4.1 SELECT 절의 처리 순서
+
+11.4.2 WHERE 절과 GROUP BY 절, ORDER BY 절의 인덱스 사용
+
+11.4.2.1 인덱스를 사용하기 위한 기본 규칙
+
+인덱스는 칼럼의 값을 아무런 변환 없이 B-Tree에 정렬해서 저장
+데이터 타입 주의!
+
+11.4.2.2 WHERE 절의 인덱스 사용
+WHERE 조건이 인덱스 사용하는 방법 : 작업 범위 결정 조건, 체크 조건
+
+11.4.2.3 GROUP BY 절의 인덱스사용
+
+- GROUP BY절에 명시된 칼럼이 인덱스 ㅏㄹ럼의 순서와 위치가 같아야함
+- 인덱스를 구성하는 칼럼 중에 뒤족에 있는 칼럼은 GROUP BY 절에 명시되지않아도 인덱스 사용할 수 있지만
+인덱스 앞족에 있는 칼럼이 GROUP BY 절에 명시되지 않으면 인덱스 사용할 수 없음
+- WHERE 조건절과는 달리 GROUP BY절에 명시된 칼럼이 하나라도 인덱스에 없으면 GROUP BY 절은 전혀 인덱스를 사용하지 못함
+
+11.4.2.4 ORDER BY 절의 인덱스 사용
+
+11.4.2.5 WHERE 조건과 ORDER BY 절의 인덱스 사용
+
+- where절 order by 동시에 같은 인덱스 이용: 가능하다면 이방식으로 처리할 수 있게 쿼리 튜닝
+- where절만 인덱스 이용: order by 절 인덱스를 이용한 정렬 불가능, 인덱스를 통해 검색된 결과 레코드를 별도의 정렬처리과정을 거쳐 정렬을 수행
+- order by절만 인덱스 이용: order by 절의 순서대로 인덱스를 읽으면서 레코드 한 건씩 where 조건에 일치하느닞 비교하고, 일치하지않으면 버리는방식으로 처리
+
+select * from test where col_1 > 10 order by col_1, col_2, col_3; (가능)
+select * from test where col_1 > 10 order by col_2, col_3; (불가능)
+
+인덱스를 이용할 수 있는지 없는지 볼 것
+
+11.4.2.6 GROUP BY 절과 ORDER BY 절의 인덱스 사용
+GROUP BY , ORDER BY 명시된 칼럼의 순서와 내용이 모두 같아야함, 둘 중 하나라도 인덱스를 이요하지못하면 인덱스를 사용하지못함
+
+11.4.2.7 WHERE 조건과 ORDER BY 절, GROUP BY 절의 인덱스 사용
+
+11.4.3 WHERE 절의 비교 조건 사용시 주의사항
+
+11.4.3.1 NULL 비교
+MySQL에서 NULL 레코드로 인덱스로 관리
+
+- SELECT * FROM title WHERE to_date IS NULL;
+- SELECT * FROM title WHERE to_date IS NULL(to_date);
+=> ix_todate 인덱스를 레인지 스캔으로 사용할 수 있음
+
+- SELECT * FROM title WHERE to_date IS NULL(to_date)=1;
+- SELECT * FROM title WHERE to_date IS NULL(to_date)=true;
+=> 인덱스나 테이블을 풀 스캔하는 형태로 처리
+
+11.4.3.2 문자열이나 숫자 비교
+
+문자열 칼럼이나 숫자 칼럼을 비교할 떄는 반드시 타입에 맞는 상숫값을 사용할 것 권장
+
+- SELECT * FROM employees WHERE emp_no=10001;
+- SELECT * FROM employees WHERE first_name='Smith';
+=> 인덱스 이용할수 있음
+
+- SELECT * FROM employees WHERE emp_no='10001;
+=> 숫자 타입이기 때문에 특별한 성능저하 발생하지않음
+
+- SELECT * FROM employees WHERE first_name=10001;
+=> 옵티마이저는 우선순위를 가지는 숫자 타입으로 비교를 수행할려고 실행계획을 세움
+ix_firstname 인덱스를 사용하지못함
+
+11.4.3.3 날짜 비교
+
+11.4.3.3.1 DATE 또는 DATETIME과 문자열 비교
+
+DATE나 DATETIME 타입의 칼럼을 변경하지 말고 상수를 변경하는 형태로 조건 사용해야함
+
+날짜 타입의 칼럼의 값을 더하거나 뺴는 함수로 변형한 후 비교해도 인덱스 이용할 수 없음
+
+11.4.3.3.2 DATE나 DATETIME 비교
+DATETIEM 타입의 값을 DATE 타입으로 만들지않고 그냥 비교하면 DATE 타입의 값을 DATETIME으로 변환해서 같은 타입을 만든 다음 비교 수행
+
+11.4.3.3.3 DATETIME과 TIMESTAMP의 비교
+변환해서 할 것
+
+11.4.3.4 Short-Circuit Evaluation
+선행 표현식의 결과에 따라 후행 표현식을 평가할지 말지 결정하는 최적화를 'Short-cricuit-Evaluation'
+
+MySQL 서버는 쿼리의 WHERE 절에 나열된 조건을 순서대로 평가 레코드를 반환할지말지 결정
+
+인덱스를 사용할 수 있는 조건은 WHERE절의 어느 위치에 나열되든지 순서에 관계없이 가장 먼저 평가
+
+11.4.4 DISTINCT
+
+11.4.5 LIMIT NAM
+LIMIT은 항상 마지막에 실행
+위의 쿼리에서 모든 레코드의 정렬이 완료되지 않았다고 하더라도 상위 5건까지만 정렬되면 작업을 멈춤
+
+- SELECT * FROM employees LIMIT 0, 10;
+=> LIMIT이 없을 때는 풀 테이블 스캔을 실행할 테지만, 10개의 레코드를 읽는 순간 읽기 작업 멈춤
+
+- SELECT * FROM employees GROUP BY first_name LIMIT 0, 10;
+=> GROUP BY 처리가 완료되고 난 후에 LIMIT 처리 수행할 수 있음
+
+- SELECT DISTINCT first_name FROM employees LIMIT 0, 10;
+=> 읽고 중복제거 작업을 진행, 유니크한 레코드가 LIMIT건수만큼 채워지면 쿼리를 멈춤
+
+- SELECT * FROM employees WHERE emp_no BETWEEN 10001 AND 11000 ORDER BY firtst_name LIMIT 0, 10;
+=> 크게 작업량 줄여주지못함, 다 정렬된후 반환
+
+LIMIT 조건의 페이징이 처음 몇 개 펭지 조회로 끝나지 않을 가능성이 높다면 WHERE 조건 절로 읽어야할 위치를 찾고
+그 위치에서 10개만 익는 형태의 쿼리를 사용하는게 좋으
+
+11.4.6 COUNT()
+
+11.4.7 JOIN
+
+11.4.7.1 JOIN의순서와 인덱스
+인덱스 레인지 스캔은 , 인덱스를 탐색하는 단계와 인덱스를 스캔하는 과정으로 구분해 볼 수 있음
+
+SELECT * FROM employees e, dept_emp de WHERE e.emp_no = de.emp_no;
+
+- 두 칼럼모두 인덱스가 있을 경우: 옵티마이저가 통계정보를 이용해 적절히 드라이빙 테이블 선택하게됨
+
+- employees.emp_no에만 인덱스가 있는 경우: employees 테이블의 레코드 건수만큼 dept_emp 테이블 풀 스캔해야함
+
+- dept_emp.emp_no에만 인덱스 있는 경우 : 반대로
+
+- 두 칼럼 모두 인덱스 없는 경우 : 
+
+11.4.7.2 JOIN 칼럼의 데이터 타입
+
+인덱스 사용에 영향을 미치는 데이터 타입 불일치는 CHAR 타입과 VARCHAR 타입
+INT 타입과 BIGINT타입
+DATE타입과 DATETIME타입
+
+11.4.7.3 OUTER JOIN의 성능과 주의사항
+
+테이블의 데이터가 일관되지 않은 경우에만 아우터 조인이 필요한 경우
+옵티마이저는 절대 아우터로 조인되는 테이블을 드라이빙 테이블로 선택하지못함
+
+안티조인 효과를 기대하는 경우 WHERE조건절 밖에 사용
+
+11.4.7.4 JOIN과 외래키
+외래키는 조인과 아무런 연관이 없음, 주목적은 데이터의 무결성을 보장하기위함
+
+11.4.7.5 지연된 조인(Delayed Join)
+
+조인의 결과를 GROUP BY, ORDER BY 하면 조인을 실행하기 전에 GROUP BY, ORDER BIY 수행하는 것보다 많은 레코드를 처리해야함
+
+11.4.7.6 래터럴 조인
+LATERAL 키워드를가진 서브쿼리는 조인 순서상 후순위로 밀리고, 외부 쿼리의 결과 레코드 단위로 임시 테이블이 생성
+
+11.4.7.7 실행 계획으로 인한 정렬 흐트러짐
+네스티트 루프 조인 대시 해시 조인이 사용되면 쿼리 결과의 레코드 정렬 순서가 달라짐
+
+드라이빙 테이블의 순서에 의존하지 말고 ORDERBY절을 명시적으로 사용하는게 좋음
+
+11.4.8 GROUP BY
+
+11.4.8.1 WITH ROLLUP 
+그루핑된 그룹별로 소계를 가져올수 있는 롤업
+SELECT dept_emp, COUNT(*) FROM dept_emp GROUP BY dept_no WITH ROLLUP;
+
+11.4.8.2 레코드를 칼럼으로 변환해서 조회
+
+11.4.8.2.1 레코드를 칼럼으로 변환
+
+11.4.8.2.2 하나의 칼럼으 ㄹ여러 칼럼으로 분리
+
+11.4.9 ORDER BY
+
+11.4.9.1 ORDER BY 사용법 및 주의사항
+
+ORDER BY 뒤에 숫자 값이 아닌 문자열 상수를 사용하는 경우, 옵티마이저가 ORDER BY 절 자체를 무시
+
+11.4.9.2 여러 방향으로 동시절러
+
+11.4.9.3 함수나 표현식을 이용한 정렬
+
+11.4.10 서브 쿼리
+
+11.4.10.1 SELECT 절에 사용된 서브 쿼리
+
+스칼라 서브 쿼레 리코드의 칼럼이 각각 하나만 결과를 만들어내는 서브쿼리
+스칼라 서브 쿼리보다 레코드 건수가 많거나 칼럼 수가 많은 결과를 만들어내는 서브 쿼리를 로우 서브쿼리라고함
+
+11.4.10.2 FROM 절에 사용된 서브 쿼리
+
+11.4.10.3 WHERE 절에 사용된 서브 쿼리
+
+11.4.10.3.1 동등 또는 크다 작다 비교
+
+
+11.4.10.3.2 IN 비교(IN (subquery))
+
