@@ -1,0 +1,72 @@
+{
+  "collector": {
+    "ingressRouter": {
+      "address": ["localhost:40001"],
+      "apiPathV1": {
+        "sensors": "/v1/sensors"
+      }
+    },
+    "redis": {
+      "address": ["localhost:6379"],
+      "password": null,
+      "dataChannelV1": {
+        "service": "data-collector-manager/v1/service.post:",
+        "get": "ingress-router/v1/sensors.get:",
+        "post": "data-collector-manager/v1/servers.post:",
+        "delete": "ingress-router/v1/sensors.delete:"
+      },
+      "dataChannelV2": {
+        "service": "data-collector-manager/v2/service.post:",
+        "get": "ingress-router/v2/sensors.get:",
+        "post": "data-collector-manager/v2/servers.post:",
+        "delete": "ingress-router/v2/sensors.delete:"
+      }
+    },
+    "zookeeper": {
+      "address": ["kwall1:32181,kwall3:32181,kwall5:32181,kwall7:32181,kwall8:32181"],
+      "monitorPathV1": {
+        "sensors": "/collectors"
+      }
+    }
+  },
+  "enricher": {
+    "ingressRouter": {
+      "address": ["localhost:40001"],
+      "apiPathV1": {
+        "sensors": "/v1/sensors"
+      }
+    },
+    "redis": {
+      "address": ["localhost:6379"],
+      "password": null,
+      "dataChannelV1": {
+        "get": "ingress-router/v1/enrichers.get:",
+        "post": "data-collector-manager/v1/enrichers.post:"
+      }
+    }
+  },
+  "servers": {
+    "kwKiotCluster": {
+      "redis": {
+        "address": ["localhost:6379"],
+        "password": null
+      },
+      "mqtt": {
+        "address": ["kwall4:38616', 'kwall5:38616', 'kwall6:38616"],
+        "username": "mqttuser",
+        "password": "zpdliot1!"
+      },
+      "opentsdb": {
+        "address": ["10.100.100.68:24242"]
+      },
+      "opentsdbWo": {
+        "address": ["10.100.100.69:24243"]
+      },
+      "mysql": {
+        "address": ["kwall5:3306"],
+        "username": "hduser",
+        "password": "zpdliot1!"
+      }
+    }
+  }
+}
